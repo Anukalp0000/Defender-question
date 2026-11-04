@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Do you think Anukalp/Arpit is the best defender?</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+
+  body {
+    font-family: "Segoe UI", system-ui, Arial, sans-serif;
+    background-image:
+      linear-gradient(rgba(0,0,0,.6), rgba(0,0,0,.6)),
+      url("haaland.jpg");           /* 👈 apni photo ka naam yahan */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #0b0b0b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow: hidden;
+  }
+
+  .card {
+    background: rgba(255,255,255,.94);
+    border-radius: 20px;
+    padding: 32px 26px;
+    max-width: 560px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0,0,0,.5);
+  }
+
+  h1 {
+    font-size: clamp(18px, 4.5vw, 28px);
+    line-height: 1.35;
+    color: #111;
+  }
+
+  .buttons {
+    margin-top: 28px;
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    align-items: center;
+    min-height: 56px;
+  }
+
+  button {
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 14px 34px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: left .28s ease, top .28s ease,
+                transform .15s ease, background .2s ease;
+  }
+
+  #yesBtn {
+    background: #1db954;
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(29,185,84,.45);
+  }
+  #yesBtn:hover { transform: scale(1.06); }
+
+  #noBtn {
+    background: #e63946;
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(230,57,70,.45);
+    position: relative;
+    z-index: 999;
+  }
+
+  .thanks {
+    margin-top: 26px;
+    font-size: clamp(20px, 5vw, 30px);
+    font-weight: 800;
+    color: #1db954;
+    animation: pop .4s ease;
+  }
+  @keyframes pop {
+    from { transform: scale(.6); opacity: 0; }
+    to   { transform: scale(1);  opacity: 1; }
+  }
+
+  .hide { display: none !important; }
+</style>
+</head>
+<body>
+
+  <div class="card">
+    <h1 id="question">Do you think Anukalp/Arpit is the best defender? 🤔</h1>
+
+    <div class="buttons" id="buttons">
+      <button id="yesBtn">Yes ✅</button>
+      <button id="noBtn">No ❌</button>
+    </div>
+
+    <div class="thanks hide" id="thanks">Dhanyavad! 🙏🔥</div>
+  </div>
+
+<script>
+  const yesBtn   = document.getElementById('yesBtn');
+  const noBtn    = document.getElementById('noBtn');
+  const buttons  = document.getElementById('buttons');
+  const thanks   = document.getElementById('thanks');
+  const question = document.getElementById('question');
+
+  /* ---------- YES button ---------- */
+  yesBtn.addEventListener('click', () => {
+    question.classList.add('hide');
+    buttons.classList.add('hide');
+    thanks.classList.remove('hide');
+  });
+
+  /* ---------- NO button bhaagta hai ---------- */
+  const DIRS = ['up', 'right', 'left', 'down'];  // up → right → left → down → repeat
+  let dirIndex = 0;
+  let fixed = false;
+  let pos = { x: 0, y: 0 };
+
+  const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+
+  noBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    // pehli baar click: button ko fixed karo (taaki screen par kahin bhi jaa sake)
+    if (!fixed) {
+      const r = noBtn.getBoundingClientRect();
+      noBtn.style.position = 'fixed';
+      noBtn.style.left = r.left + 'px';
+      noBtn.style.top  = r.top + 'px';
+      noBtn.style.margin = '0';
+      pos = { x: r.left, y: r.top };
+      void noBtn.offsetWidth;   // force reflow (smooth animation ke liye)
+      fixed = true;
+    }
+
+    const w = noBtn.offsetWidth;
+    const h = noBtn.offsetHeight;
+    const maxX = window.innerWidth  - w - 10;
+    const maxY = window.innerHeight - h - 10;
+
+    // jo direction band ho (screen kinare par), usse skip karke agla try karo
+    for (let i = 0; i < DIRS.length; i++) {
+      const dir  = DIRS[dirIndex % DIRS.length];
+      const step = 90 + Math.random() * 70;   // thoda random, maze ke liye
+      let nx = pos.x, ny = pos.y;
+
+      if      (dir === 'up')    ny -= step;
+      else if (dir === 'down')  ny += step;
+      else if (dir === 'left')  nx -= step;
+      else                      nx += step;
+
+      nx = clamp(nx, 10, maxX);
+      ny = clamp(ny, 10, maxY);
+      dirIndex++;
+
+      if (Math.abs(nx - pos.x) > 1 || Math.abs(ny - pos.y) > 1) {
+        pos = { x: nx, y: ny };
+        break;
+      }
+    }
+
+    noBtn.style.left = pos.x + 'px';
+    noBtn.style.top  = pos.y + 'px';
+  });
+
+  // screen resize ho to button bahar na chala jaaye
+  window.addEventListener('resize', () => {
+    if (!fixed) return;
+    const w = noBtn.offsetWidth, h = noBtn.offsetHeight;
+    pos.x = clamp(pos.x, 10, window.innerWidth  - w - 10);
+    pos.y = clamp(pos.y, 10, window.innerHeight - h - 10);
+    noBtn.style.left = pos.x + 'px';
+    noBtn.style.top  = pos.y + 'px';
+  });
+</script>
+</body>
+</html>
